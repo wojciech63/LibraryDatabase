@@ -42,7 +42,6 @@ Create TABLE Rental(
 	CopyID INT NOT NULL,
 	CustomerID INT NOT NULL,
 -- 1 - Availiable, 0 - Not availiable
-	Status Boolean NOT NULL,
 	Fine Numeric(3, 2),
 	RentalDate DATE NOT NULL,
 	ReturnDate DATE,
@@ -50,11 +49,11 @@ Create TABLE Rental(
 	Foreign Key (CustomerID) References Customer(CustomerID)
 );
 
-ALTER TABLE Book ADD COLUMN Status BOOLEAN DEFAULT TRUE;
+ALTER TABLE Book ADD COLUMN Status BOOLEAN DEFAULT FALSE;
 
 ALTER TABLE Book ADD COLUMN TimesRented INT Default 0;
 
-CREATE FUNCTION update_book_status()
+CREATE OR REPLACE FUNCTION update_book_status()
 Returns TRIGGER AS $$
 BEGIN
 	IF NEW.ReturnDate IS NULL THEN
@@ -62,7 +61,8 @@ BEGIN
 	SET TimesRented = TimesRented +1,
 		Status = FALSE
 	WHERE CopyID = NEW.CopyID;
-ELSE
+	ELSIF
+	NEW.ReturnDate IS NOT NULL THEN
 	UPDATE Book
 	SET Status = TRUE
 	WHERE CopyID = NEW.CopyID;
