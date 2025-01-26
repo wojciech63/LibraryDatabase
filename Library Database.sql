@@ -49,3 +49,36 @@ Create TABLE Rental(
 	Foreign Key (CopyID) References Book(CopyID),
 	Foreign Key (CustomerID) References Customer(CustomerID)
 );
+
+ALTER TABLE Book ADD COLUMN Status BOOLEAN DEFAULT TRUE;
+
+ALTER TABLE Book ADD COLUMN TimesRented INT Default 0;
+
+CREATE FUNCTION update_book_status()
+Returns TRIGGER AS $$
+BEGIN
+	IF NEW.ReturnDate IS NULL THEN
+	UPDATE Book
+	SET TimesRented = TimesRented +1,
+		Status = FALSE
+	WHERE CopyID = NEW.CopyID;
+ELSE
+	UPDATE Book
+	SET Status = TRUE
+	WHERE CopyID = NEW.CopyID;
+END IF;
+
+RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER when_rented
+AFTER INSERT ON RENTAL
+FOR EACH ROW
+EXECUTE FUNCTION update_book_status();
+
+CREATE TRIGGER post_rental
+AFTER UPDATE OF ReturnDate on Rental
+FOR EACH ROW
+EXECUTE FUNCTION update_book_status();
+
