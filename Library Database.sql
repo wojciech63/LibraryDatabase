@@ -15,9 +15,7 @@ Create Table Book(
 Create Table Authors (
 	AuthorID SERIAL Primary Key,
 	FirstName VarChar(100) Not Null,
-	LastName VarChar(100) Not null,
-	CopyID int Not Null,
-	Foreign Key(CopyID) References Book(CopyID)
+	LastName VarChar(100) Not null
 );
 
 -- Junction Table
